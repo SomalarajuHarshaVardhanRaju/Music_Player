@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music Player</title>
+  <link rel="stylesheet" href="musicplayer.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <div class="player">
+    <h2>🎶 My Music Player </h2>
+
+
+    <!-- Song Progress -->
+    <div class="progress">
+      <span id="currentTime">0:00</span>
+      <input type="range" id="progressBar" min="0" max="100" value="0">
+      <span id="duration">0:00</span>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button id="prev"><i class="fas fa-backward"></i></button>
+      <button id="play"><i class="fas fa-play"></i></button>
+      <button id="pause"><i class="fas fa-pause"></i></button>
+      <button id="next"><i class="fas fa-forward"></i></button>
+    </div>
+
+    <!-- Volume -->
+    <div class="volume">
+      <label for="volumeControl">🔊 Volume</label><br>
+      <input type="range" id="volumeControl" min="0" max="100" value="50">
+    </div>
+
+    <!-- Playlist -->
+    <div class="playlist">
+      <h3>🎶 Playlist</h3>
+      <ul id="playlist">
+        <li data-src="Love.mp3" class="active"><i class="fas fa-music"></i>Love</li>
+        <li data-src="Maari s Aanandhi - SenSongsMp3.mp3"><i class="fas fa-music"></i> Maari Aanandhi</li>
+        <li data-src="[iSongs.info] 04 - Ragile Ragile.mp3"><i class="fas fa-music"></i> Ragile Ragile</li>
+        <li data-src="Evarevaro.mp3"><i class="fas fa-music"></i> Evarevaro</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Script -->
+  <script>
+    const audio = new Audio();
+    const playBtn = document.getElementById("play");
+    const pauseBtn = document.getElementById("pause");
+    const nextBtn = document.getElementById("next");
+    const prevBtn = document.getElementById("prev");
+    const progressBar = document.getElementById("progressBar");
+    const currentTimeEl = document.getElementById("currentTime");
+    const durationEl = document.getElementById("duration");
+    const volumeControl = document.getElementById("volumeControl");
+    const playlistItems = document.querySelectorAll("#playlist li");
+
+    let currentTrack = 0;
+
+    // Load a track
+    function loadTrack(index) {
+      playlistItems.forEach(item => item.classList.remove("active"));
+      playlistItems[index].classList.add("active");
+      audio.src = playlistItems[index].getAttribute("data-src");
+      audio.load();
+    }
+
+    // Play current track
+    function playTrack() {
+      audio.play();
+    }
+
+    // Time formatting
+    function formatTime(sec) {
+      const minutes = Math.floor(sec / 60);
+      const seconds = Math.floor(sec % 60);
+      return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
+    }
+
+    // Progress bar update
+    audio.addEventListener("timeupdate", () => {
+      if (audio.duration) {
+        progressBar.value = (audio.currentTime / audio.duration) * 100;
+        currentTimeEl.textContent = formatTime(audio.currentTime);
+        durationEl.textContent = formatTime(audio.duration);
+      }
+    });
+
+    // Seek
+    progressBar.addEventListener("input", () => {
+      audio.currentTime = (progressBar.value / 100) * audio.duration;
+    });
+
+    // Volume Control
+    volumeControl.addEventListener("input", () => {
+      audio.volume = volumeControl.value / 100;
+    });
+
+    // Controls
+    playBtn.addEventListener("click", playTrack);
+    pauseBtn.addEventListener("click", () => audio.pause());
+    nextBtn.addEventListener("click", () => {
+      currentTrack = (currentTrack + 1) % playlistItems.length;
+      loadTrack(currentTrack);
+      playTrack();
+    });
+    prevBtn.addEventListener("click", () => {
+      currentTrack = (currentTrack - 1 + playlistItems.length) % playlistItems.length;
+      loadTrack(currentTrack);
+      playTrack();
+    });
+
+    // Playlist click
+    playlistItems.forEach((item, index) => {
+      item.addEventListener("click", () => {
+        currentTrack = index;
+        loadTrack(currentTrack);
+        playTrack();
+      });
+    });
+
+    // Auto play next when track ends
+    audio.addEventListener("ended", () => {
+      currentTrack = (currentTrack + 1) % playlistItems.length;
+      loadTrack(currentTrack);
+      playTrack();
+    });
+
+    // Initialize
+    loadTrack(currentTrack);
+  </script>
+</body>
+</html>
